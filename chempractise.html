@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MEGA Question Revision Tool</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+  <script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$', right: '$', display: true},{left: '\\(', right: '\\)', display: false}]})">
+  </script>
+  <style>
+    :root {
+      --bg: #181c23;
+      --bg-light: #f8f9fa;
+      --card-bg: #232634;
+      --card-bg-light: #ffffff;
+      --accent: #6c63ff;
+      --accent-light: #3f51b5;
+      --text: #ffffff;
+      --text-light: #28293d;
+      --muted: #b3bbd8;
+      --primary-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      font-family: var(--primary-font);
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+    .lightmode {
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --accent: #3f51b5;
+      --text: #28293d;
+      --muted: #6a6d75;
+    }
+    .main-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    aside {
+      min-width: 220px;
+      background: var(--card-bg);
+      border-right: 1.5px solid rgba(51, 51, 85, 0.33);
+      padding: 1.5em 0.7em 1.5em 1.2em;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    aside h2 { font-size: 1em; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 1em;}
+    .nav-section {margin-bottom: 2em;}
+    .nav-link {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 0.5em;
+      font-size: 1.01em;
+      padding: 0.20em 0.4em;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+      cursor: pointer;
+    }
+    .nav-link.active, .nav-link:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2em 2em 1em 2em;
+    }
+    .header-row h1 {margin: 0; font-size: 2em; letter-spacing: 2px;}
+    .search-bar input {
+      font-size: 1.08em;
+      padding: 0.5em 1.2em;
+      border: 1.5px solid var(--accent);
+      border-radius: 2em;
+      outline: none;
+      background: var(--card-bg);
+      color: var(--text);
+      width: 230px;
+      margin-right: 1em;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+    }
+    .lightmode .search-bar input {
+      background: #f4f5fa;
+      color: #28293d;
+      border: 1.5px solid #c5c8e3;
+    }
+    .mode-toggle-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 2em;
+      font-size: 1.06em;
+      padding: 0.4em 1.1em;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-left: 1em;
+    }
+    .mode-toggle-btn:hover {
+      background: #4d46a1;
+    }
+    main {
+      flex: 1;
+      padding: 1.5em 3vw 3vw 2vw;
+      background: var(--bg);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .cards-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2em;
+    }
+    @media (max-width: 900px) {
+      .cards-grid {flex-direction: column;}
+      aside {min-width: 165px;padding: 1.2em 0.3em 1.2em 0.9em;}
+    }
+    .qa-card {
+      background: var(--card-bg);
+      color: var(--text);
+      border-radius: 1em;
+      box-shadow: 0 5px 32px rgba(34, 34, 68, 0.27);
+      padding: 1.2em 1.3em 0.6em 1.3em;
+      margin-bottom: 2em;
+      min-width: 330px;
+      max-width: 520px;
+      flex: 1 1 420px;
+      position: relative;
+      transition: background 0.3s, color 0.3s;
+    }
+    .qa-card .card-header {
+      font-size: 1.15em;
+      color: var(--accent);
+      margin-bottom: 0.2em;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .qa-card .question {
+      font-size: 1.06em;
+      font-weight: 540;
+      color: var(--text);
+      margin-bottom: 0.7em;
+    }
+    .qa-card .show-solution-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 1.3em;
+      font-size: 1em;
+      padding: 0.4em 1em;
+      cursor: pointer;
+      margin-bottom: 0.7em;
+      transition: background 0.2s;
+      margin-right: 0.6em;
+    }
+    .qa-card .show-solution-btn:hover {background: #4d46a1;}
+    .qa-card .solution {
+      margin: 0.4em 0 0.5em 0;
+      font-size: 1.05em;
+      color: #cdf;
+      background: rgba(19, 22, 45, 0.17);
+      border-radius: 0.7em;
+      padding: 0.7em 1em;
+      transition: background 0.2s, color 0.2s;
+      display: none;
+    }
+    .lightmode .qa-card .solution {
+      background: #e9eaf5;
+      color: #354296;
+    }
+    .shortcut {
+      background: #343b5a;
+      color: #fff;
+      font-size: 0.93em;
+      border-radius: 0.7em;
+      margin: 0.9em 0 0.4em 0;
+      padding: 0.5em 1em;
+      font-style: italic;
+    }
+    .lightmode .shortcut { background: #d3e3f4; color: #184b79;}
+    .answer-key {
+      background: var(--card-bg);
+      color: var(--accent);
+      border-radius: 1em;
+      box-shadow: 0 4px 16px rgba(17, 17, 34, 0.13);
+      padding: 1em 2em;
+      margin-top: 2.5em;
+      margin-bottom: 1em;
+      font-size: 1.12em;
+      max-width: 870px;
+    }
+    .answer-key h2 {margin-top: 0;}
+    .show-all-btn {
+      font-size: 1em;
+      background: rgba(51, 51, 68, 0.27);
+      color: var(--accent);
+      border: none;
+      border-radius: 1.5em;
+      padding: 0.45em 1.1em;
+      cursor: pointer;
+      margin-bottom: 1em;
+      margin-right: 0.7em;
+      transition: background 0.2s, color 0.2s;
+    }
+    .show-all-btn:hover {background: var(--accent); color: #fff;}
+    @media (max-width:730px) {
+      .header-row {flex-direction: column; gap: 1em;}
+      aside {display: none;}
+      main {padding-left: 6vw;}
+      .cards-grid {flex-direction: column;gap:1.1em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <aside>
+      <h2>Subjects</h2>
+      <div class="nav-section" id="nav-links"></div>
+      <div style="margin-top:3em;font-size:0.98em;color:var(--muted);line-height:1.8;">
+        <span style="font-size:1.2em;">&#128218;</span>
+        <b>Tips:</b>
+        <br>
+        - Click a Question to read the solution.<br>
+        - Use <strong>Show All</strong> to reveal all answers.<br>
+        - Search questions or topics instantly.<br>
+        - Switch to Light/Dark mode any time.<br>
+      </div>
+    </aside>
+
+    <main>
+      <div class="header-row">
+        <h1>MEGA JEE Revision Tool</h1>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search...">
+          <button class="mode-toggle-btn" id="toggleModeBtn">🌙 Dark</button>
+        </div>
+      </div>
+      <button class="show-all-btn" id="showAllBtn">Show All Solutions</button>
+      <div class="cards-grid" id="questionsContainer"></div>
+      <div class="answer-key" id="answerKeySection">
+        <h2>Quick Answer Key</h2>
+        <div id="answerKeyTable">
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>
+    // --- DATA ---
+  const DATA = [
+  {
+    section: "Some Basic Concepts of Chemistry",
+    questions: [
+      {
+        q: "a) A 5.60 g sample of an unknown hydrocarbon (CxHy) is combusted completely in oxygen, producing 17.6 g of CO₂ and 7.2 g of H₂O. If the molar mass of the hydrocarbon is 56 g/mol, determine its molecular formula.",
+        a: `<b>Step 1:</b> Moles of CO₂ = 17.6/44 = 0.4 mol (implies 0.4 mol C atoms).<br>
+<b>Step 2:</b> Moles of H₂O = 7.2/18 = 0.4 mol (implies 0.8 mol H atoms).<br>
+<b>Step 3:</b> Ratio C:H = 0.4:0.8 = 1:2. Empirical formula = CH₂.<br>
+<b>Step 4:</b> Empirical mass = 14. Molar mass = 56. n = 56/14 = 4.<br>
+<b>Step 5:</b> Molecular formula = (CH₂)₄ = C₄H₈.<br>
+<b>Shortcut:</b> Use combustion data to get C and H, then compare empirical and molar mass.`
+      },
+      {
+        q: "b) A mixture of CaCO₃ and MgCO₃ weighing 10.0 g is heated, producing 2.24 L of CO₂ at STP. Calculate the percentage by mass of CaCO₃ in the mixture.",
+        a: `<b>Step 1:</b> Moles CO₂ = 2.24/22.4 = 0.1 mol.<br>
+Let x g CaCO₃, (10–x) g MgCO₃.<br>
+Moles CO₂ from CaCO₃ = x/100, from MgCO₃ = (10–x)/84.<br>
+x/100 + (10–x)/84 = 0.1<br>
+Solve: 0.01x + 0.119–0.0119x = 0.1 ⇒ –0.0019x = –0.019 ⇒ x = 10.<br>
+Thus, mixture is pure CaCO₃.<br>
+<b>Shortcut:</b> If CO₂ evolved matches 10 g/100 g/mol, all is CaCO₃.`
+      },
+      {
+        q: "c) 0.5 mol of Na₂SO₄ is dissolved in water to make 250 mL solution. Calculate the molarity and the total number of sodium ions per litre.",
+        a: `<b>Step 1:</b> Molarity = 0.5/0.25 = 2 M.<br>
+<b>Step 2:</b> 1 mol Na₂SO₄ gives 2 mol Na⁺. So, 0.5 mol gives 1 mol Na⁺ in 0.25 L.<br>
+<b>Step 3:</b> Per litre: 1 × 4 = 4 mol Na⁺ per litre = 4 × 6.022 × 10²³ = 2.41 × 10²⁴ ions.`
+      },
+      {
+        q: "d) A solution contains 0.2 mol of NaCl and 0.1 mol of AgNO₃ in 500 mL. If AgCl (Ksp = 1.8 × 10⁻¹⁰) forms, calculate the mass of AgCl precipitated.",
+        a: `<b>Step 1:</b> Ag⁺ + Cl⁻ → AgCl(s).<br>
+NaCl: 0.2 mol; AgNO₃: 0.1 mol.<br>
+Limiting: AgNO₃ (0.1 mol).<br>
+<b>Step 2:</b> Mass AgCl = 0.1 mol × 143.5 g/mol = 14.35 g.<br>
+<b>Step 3:</b> Check if any Ag⁺ or Cl⁻ left in solution using Ksp for confirmation (none in excess).`
+      },
+      {
+        q: "e) A sample of gas occupies 5.6 L at STP and weighs 7.0 g. Calculate its molar mass and identify the gas.",
+        a: `<b>Step 1:</b> Moles = 5.6/22.4 = 0.25 mol.<br>
+<b>Step 2:</b> Molar mass = 7.0/0.25 = 28 g/mol.<br>
+<b>Step 3:</b> Gas is N₂.`
+      }
+    ]
+  },
+  {
+    section: "Structure of Atom",
+    questions: [
+      {
+        q: "a) Calculate the wavelength (in nm) of the photon emitted when an electron in hydrogen atom jumps from n=5 to n=2. (R_H = 2.18 × 10⁻¹⁸ J, h = 6.626 × 10⁻³⁴ J·s, c = 3 × 10⁸ m/s)",
+        a: `<b>Step 1:</b> ΔE = R_H (1/2² – 1/5²) = 2.18×10⁻¹⁸ (1/4 – 1/25) = 2.18×10⁻¹⁸ × (21/100) = 4.578×10⁻¹⁹ J.<br>
+<b>Step 2:</b> λ = hc/ΔE = (6.626×10⁻³⁴ × 3×10⁸) / 4.578×10⁻¹⁹ ≈ 434 nm.<br>
+<b>Shortcut:</b> Use Rydberg formula for direct λ calculation.`
+      },
+      {
+        q: "b) The ionization energy of a hydrogen-like ion is 122.4 eV. Find its atomic number.",
+        a: `<b>Step 1:</b> Ionization energy = 13.6 Z² eV.<br>
+122.4 = 13.6 Z² ⇒ Z² = 9 ⇒ Z = 3 (Li²⁺).`
+      },
+      {
+        q: "c) How many spectral lines are possible when an electron in n=4 excited state of hydrogen atom returns to ground state?",
+        a: `<b>Step 1:</b> Number of lines = n(n–1)/2 = 4×3/2 = 6.`
+      },
+      {
+        q: "d) The energy required to remove the most loosely bound electron from a sodium atom is 496 kJ/mol. Calculate the frequency (in Hz) of the corresponding photon.",
+        a: `<b>Step 1:</b> Energy per atom = 496,000 J / 6.022×10²³ ≈ 8.24×10⁻¹⁹ J.<br>
+<b>Step 2:</b> ν = E/h = 8.24×10⁻¹⁹ / 6.626×10⁻³⁴ ≈ 1.24×10¹⁵ Hz.`
+      },
+      {
+        q: "e) Calculate the velocity of the electron in the second Bohr orbit of hydrogen atom.",
+        a: `<b>Step 1:</b> vₙ = 2.18 × 10⁶ m/s / n.<br>
+For n=2: v = 2.18 × 10⁶ / 2 = 1.09 × 10⁶ m/s.`
+      }
+    ]
+  },
+  {
+    section: "Chemical Bonding and Molecular Structure",
+    questions: [
+      {
+        q: "a) The bond order of O₂ is 2. Calculate the number of unpaired electrons in O₂ molecule.",
+        a: `<b>Step 1:</b> O₂ has 16 electrons. Fill the molecular orbital diagram up to π* orbitals.<br>
+<b>Step 2:</b> π*2p_x and π*2p_y each have one electron unpaired.<br>
+<b>Step 3:</b> Number of unpaired electrons = <b>2</b>.`
+      },
+      {
+        q: "b) The dipole moment of HCl is 1.03 × 10⁻²⁹ C·m and the bond length is 127 pm. Calculate the percent ionic character. (e = 1.6 × 10⁻¹⁹ C)",
+        a: `<b>Step 1:</b> Calculated dipole = e × bond length = 1.6 × 10⁻¹⁹ × 127 × 10⁻¹² = 2.03 × 10⁻²⁹ C·m.<br>
+<b>Step 2:</b> Percent ionic character = (Measured dipole / Calculated dipole) × 100 = (1.03/2.03) × 100 ≈ <b>50.7%</b>.`
+      },
+      {
+        q: "c) The formal charge on the central atom in SO₄²⁻ is x. Calculate x.",
+        a: `<b>Step 1:</b> S: 6 valence electrons, 0 lone pairs, 8 bonding electrons.<br>
+Formal charge = 6 – 0 – 8/2 = 6 – 4 = <b>+2</b>.`
+      },
+      {
+        q: "d) The energy required to break all bonds in 2 moles of H₂O is 920 kJ. Calculate the average bond enthalpy of O–H bond in kJ/mol.",
+        a: `<b>Step 1:</b> Each H₂O has 2 O–H bonds, so 2 moles H₂O = 4 O–H bonds.<br>
+<b>Step 2:</b> Average bond enthalpy = 920 kJ / 4 = <b>230 kJ/mol</b>.`
+      },
+      {
+        q: "e) In NH₄⁺, what is the hybridization of the central atom and the H–N–H bond angle?",
+        a: `<b>Step 1:</b> NH₄⁺ has 4 bond pairs, no lone pairs on N.<br>
+<b>Step 2:</b> Hybridization is sp³.<br>
+<b>Step 3:</b> Bond angle = <b>109.5°</b>.`
+      }
+    ]
+  },
+  {
+    section: "States of Matter",
+    questions: [
+      {
+        q: "a) A 2.0 L flask contains 4.0 g of H₂ at 27°C. Calculate the pressure exerted by the gas. (R = 0.082 L·atm·K⁻¹·mol⁻¹)",
+        a: `<b>Step 1:</b> Moles of H₂ = 4/2 = 2 mol.<br>
+<b>Step 2:</b> T = 27 + 273 = 300 K.<br>
+<b>Step 3:</b> Use PV = nRT: P = nRT/V = (2 × 0.082 × 300)/2 = <b>24.6 atm</b>.`
+      },
+      {
+        q: "b) Calculate the root mean square speed (in m/s) of O₂ molecules at 300 K. (M = 32 g/mol, R = 8.314 J·mol⁻¹·K⁻¹)",
+        a: `<b>Step 1:</b> u_rms = sqrt(3RT/M).<br>
+<b>Step 2:</b> = sqrt(3 × 8.314 × 300 / 0.032) ≈ <b>484 m/s</b>.`
+      },
+      {
+        q: "c) If the compressibility factor Z for a gas is 0.8 at 10 atm, calculate the molar volume (in L) at 300 K for 1 mol.",
+        a: `<b>Step 1:</b> PV = ZnRT. V = ZnRT/P.<br>
+<b>Step 2:</b> = 0.8 × 1 × 0.082 × 300 / 10 = <b>1.968 L ≈ 2.0 L</b>.`
+      },
+      {
+        q: "d) If the rate of diffusion of gas A is twice that of gas B, and the molar mass of B is 64 g/mol, calculate the molar mass of A.",
+        a: `<b>Step 1:</b> Rate ∝ 1/√M. (rA/rB) = √(MB/MA) = 2.<br>
+<b>Step 2:</b> 2 = √(64/MA) ⇒ 4 = 64/MA ⇒ MA = <b>16 g/mol</b>.`
+      },
+      {
+        q: "e) At 300 K, the rate of effusion of gas X is 1.414 times that of O₂. Calculate the molar mass of X.",
+        a: `<b>Step 1:</b> r₁/r₂ = √(M₂/M₁). 1.414 = √(32/M₁) ⇒ 2 = 32/M₁ ⇒ M₁ = <b>16 g/mol</b>.`
+      }
+    ]
+  },
+  {
+    section: "Thermodynamics",
+    questions: [
+      {
+        q: "a) 500 J of heat is supplied to a system and 150 J of work is done by the system. Calculate the change in internal energy.",
+        a: `<b>Step 1:</b> ΔU = q - w = 500 J - 150 J.<br>
+<b>Step 2:</b> ΔU = <b>350 J</b>. The internal energy increases by 350 J.`
+      },
+      {
+        q: "b) For the reaction: C(s) + O₂(g) → CO₂(g), ΔH = -393.5 kJ/mol and ΔU = -394.5 kJ/mol at 298 K. Calculate Δn(gas).",
+        a: `<b>Step 1:</b> ΔH = ΔU + Δn(gas)RT.<br>
+<b>Step 2:</b> ΔH - ΔU = Δn(gas)RT. -393.5 - (-394.5) = 1.0 = Δn(gas) × 8.314 × 298 / 1000.<br>
+<b>Step 3:</b> Δn(gas) ≈ <b>0</b>.`
+      },
+      {
+        q: "c) Calculate the entropy change (in J/K) when 2 mol of an ideal gas expands isothermally and reversibly from 10 L to 20 L at 300 K.",
+        a: `<b>Step 1:</b> ΔS = nR ln(Vf/Vi) = 2 × 8.314 × ln(20/10).<br>
+<b>Step 2:</b> = 16.628 × 0.693 = <b>11.52 J/K</b>.`
+      },
+      {
+        q: "d) Calculate the temperature (in K) at which a reaction with ΔH = 40 kJ/mol and ΔS = 100 J/K·mol becomes spontaneous.",
+        a: `<b>Step 1:</b> ΔG < 0 ⇒ ΔH - TΔS < 0 ⇒ T > ΔH/ΔS.<br>
+<b>Step 2:</b> T = 40,000 J / 100 J/K = <b>400 K</b>.`
+      },
+      {
+        q: "e) For the combustion of methane, CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l), ΔH = -890 kJ/mol. Calculate the heat evolved when 5 g of methane is completely combusted.",
+        a: `<b>Step 1:</b> Moles of CH₄ = 5/16 = 0.3125 mol.<br>
+<b>Step 2:</b> Heat evolved = 0.3125 × 890 = <b>278 kJ</b>.`
+      }
+    ]
+  },
+  {
+    section: "Equilibrium",
+    questions: [
+      {
+        q: "a) For the reaction N₂ + 3H₂ ⇌ 2NH₃, if Kc = 0.5 at 500 K, calculate Kp at 500 K. (R = 0.082 L·atm·K⁻¹·mol⁻¹)",
+        a: `<b>Step 1:</b> Kp = Kc(RT)^Δn. Δn = 2 - (1+3) = -2.<br>
+<b>Step 2:</b> Kp = 0.5 × (0.082 × 500)^-2 = 0.5 × (41)^-2 ≈ <b>0.012</b>.`
+      },
+      {
+        q: "b) The pH of a solution is 3. Calculate the concentration of H⁺ ions.",
+        a: `<b>Step 1:</b> [H⁺] = 10^-pH = 10^-3 mol/L = <b>1 × 10^-3 mol/L</b>.`
+      },
+      {
+        q: "c) The solubility product (Ksp) of PbCl₂ is 1.7 × 10⁻⁵ at 25°C. Calculate its solubility in mol/L.",
+        a: `<b>Step 1:</b> Let solubility = s. Ksp = [Pb²⁺][Cl⁻]² = s × (2s)² = 4s³.<br>
+<b>Step 2:</b> 4s³ = 1.7 × 10⁻⁵ ⇒ s³ = 0.425 × 10⁻⁵ ⇒ s ≈ <b>1.6 × 10⁻² mol/L</b>.`
+      },
+      {
+        q: "d) A buffer solution is prepared by mixing 0.2 mol of acetic acid and 0.1 mol of sodium acetate in 1 L. If pKa = 4.76, calculate the pH.",
+        a: `<b>Step 1:</b> pH = pKa + log([A⁻]/[HA]) = 4.76 + log(0.1/0.2).<br>
+<b>Step 2:</b> = 4.76 + log(0.5) = 4.76 - 0.3 = <b>4.46</b>.`
+      },
+      {
+        q: "e) 0.1 mol of acetic acid (Ka = 1.8 × 10⁻⁵) is dissolved in 1 L of water. Calculate the pH of the solution.",
+        a: `<b>Step 1:</b> [H⁺] = √(Ka × c) = √(1.8 × 10⁻⁵ × 0.1) = √(1.8 × 10⁻⁶) ≈ 1.34 × 10⁻³.<br>
+<b>Step 2:</b> pH = -log(1.34 × 10⁻³) ≈ <b>2.87</b>.`
+      }
+    ]
+  },
+  {
+    section: "Redox Reactions",
+    questions: [
+      {
+        q: "a) Calculate the oxidation number of Cr in K₂Cr₂O₇.",
+        a: `<b>Step 1:</b> Let x = oxidation number of Cr. 2(+1) + 2x + 7(-2) = 0.<br>
+<b>Step 2:</b> 2 + 2x - 14 = 0 ⇒ 2x = 12 ⇒ x = <b>+6</b>.`
+      },
+      {
+        q: "b) In the reaction: MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O, how many moles of electrons are required to reduce 1 mole of MnO₄⁻?",
+        a: `<b>Step 1:</b> The equation shows <b>5 moles of electrons</b> are needed to reduce 1 mole of MnO₄⁻.`
+      },
+      {
+        q: "c) Calculate the equivalent mass of FeSO₄·7H₂O in the reaction with KMnO₄ in acidic medium. (Molar mass = 278 g/mol)",
+        a: `<b>Step 1:</b> Fe²⁺ → Fe³⁺ (change of 1 electron).<br>
+<b>Step 2:</b> Equivalent mass = molar mass / n = 278 / 2 = <b>139 g/equiv</b>.`
+      },
+      {
+        q: "d) In the reaction: 2Fe²⁺ + Cl₂ → 2Fe³⁺ + 2Cl⁻, calculate the total number of electrons transferred per mole of Cl₂.",
+        a: `<b>Step 1:</b> Cl₂ gains 2 electrons to form 2Cl⁻.<br>
+<b>Step 2:</b> So, <b>2 electrons</b> are transferred per mole of Cl₂.`
+      },
+      {
+        q: "e) 0.5 mol of KMnO₄ is used to oxidize Fe²⁺ in acidic medium. How many moles of Fe²⁺ are oxidized?",
+        a: `<b>Step 1:</b> 1 mol KMnO₄ oxidizes 5 mol Fe²⁺.<br>
+<b>Step 2:</b> 0.5 mol × 5 = <b>2.5 mol Fe²⁺</b>.`
+      }
+    ]
+  },
+  {
+    section: "Solutions",
+    questions: [
+      {
+        q: "a) 10 g of urea (M = 60 g/mol) is dissolved in 250 g of water. Calculate the lowering of vapour pressure if the vapour pressure of pure water at this temperature is 31.8 mmHg.",
+        a: `<b>Step 1:</b> Moles of urea = 10/60 = 0.167 mol.<br>
+<b>Step 2:</b> Moles of water = 250/18 = 13.89 mol.<br>
+<b>Step 3:</b> Mole fraction of urea = 0.167/(0.167+13.89) ≈ 0.012.<br>
+<b>Step 4:</b> Lowering = X_solute × P° = 0.012 × 31.8 = <b>0.38 mmHg</b>.`
+      },
+      {
+        q: "b) 5 g of a non-volatile solute (M = 50 g/mol) is dissolved in 100 g benzene (M = 78 g/mol). Calculate the elevation in boiling point if Kb for benzene is 2.53 K·kg·mol⁻¹.",
+        a: `<b>Step 1:</b> Moles solute = 5/50 = 0.1 mol.<br>
+<b>Step 2:</b> Mass solvent = 0.1 kg.<br>
+<b>Step 3:</b> Molality = 0.1/0.1 = 1 m.<br>
+<b>Step 4:</b> ΔTb = Kb × m = 2.53 × 1 = <b>2.53 K</b>.`
+      },
+      {
+        q: "c) Calculate the osmotic pressure at 27°C of a solution prepared by dissolving 6 g glucose (M = 180 g/mol) in 1 L water. (R = 0.082 L·atm·K⁻¹·mol⁻¹)",
+        a: `<b>Step 1:</b> Moles glucose = 6/180 = 0.033 mol.<br>
+<b>Step 2:</b> π = nRT/V = 0.033 × 0.082 × 300 / 1 = <b>0.81 atm</b>.`
+      },
+      {
+        q: "d) A solution contains 0.1 mol NaCl in 1 kg water. Calculate the depression in freezing point. (Kf = 1.86 K·kg·mol⁻¹, NaCl is fully dissociated)",
+        a: `<b>Step 1:</b> NaCl dissociates into 2 ions, i = 2.<br>
+<b>Step 2:</b> ΔTf = i × Kf × m = 2 × 1.86 × 0.1 = <b>0.372 K</b>.`
+      },
+      {
+        q: "e) 0.2 mol of KNO₃ is dissolved in 500 g water. Calculate the molality and mole fraction of KNO₃.",
+        a: `<b>Step 1:</b> Molality = 0.2 / 0.5 = <b>0.4 m</b>.<br>
+<b>Step 2:</b> Moles water = 500/18 = 27.78.<br>
+<b>Step 3:</b> Mole fraction = 0.2 / (0.2 + 27.78) ≈ <b>0.007</b>.`
+      }
+    ]
+  },
+  {
+    section: "Electrochemistry",
+    questions: [
+      {
+        q: "a) A cell is constructed: Zn|Zn²⁺(0.1 M)||Cu²⁺(1 M)|Cu. E°cell = 1.10 V at 298 K. Calculate the cell potential. (n = 2, log 10 = 1)",
+        a: `<b>Step 1:</b> Ecell = E°cell - (0.059/2) log([Zn²⁺]/[Cu²⁺])<br>
+= 1.10 - 0.0295 × log(0.1/1) = 1.10 - 0.0295 × (-1) = 1.10 + 0.0295 = <b>1.13 V</b>.`
+      },
+      {
+        q: "b) How many grams of Ag will be deposited when a current of 2 A is passed through AgNO₃ solution for 30 minutes? (M = 108 g/mol, 1F = 96500 C)",
+        a: `<b>Step 1:</b> Q = I × t = 2 × 1800 = 3600 C.<br>
+<b>Step 2:</b> Moles Ag = Q/(nF) = 3600/(1×96500) = 0.0373 mol.<br>
+<b>Step 3:</b> Mass = 0.0373 × 108 = <b>4.03 g</b>.`
+      },
+      {
+        q: "c) The molar conductivity of 0.01 M KCl is 141 S·cm²·mol⁻¹. Calculate its specific conductivity.",
+        a: `<b>Step 1:</b> κ = Λm × c = 141 × 0.01 = <b>1.41 S·cm⁻¹</b>.`
+      },
+      {
+        q: "d) The standard electrode potential of Ag⁺/Ag is +0.80 V and that of Cu²⁺/Cu is +0.34 V. Write the cell reaction and calculate E°cell.",
+        a: `<b>Step 1:</b> Cell: Ag|Ag⁺||Cu²⁺|Cu.<br>
+<b>Step 2:</b> E°cell = E°cathode - E°anode = 0.80 - 0.34 = <b>0.46 V</b>.`
+      },
+      {
+        q: "e) 0.5 Faraday of electricity is passed through molten AlCl₃. Calculate the mass of Al deposited. (M = 27 g/mol)",
+        a: `<b>Step 1:</b> Al³⁺ + 3e⁻ → Al. 1 mol Al needs 3 F.<br>
+<b>Step 2:</b> 0.5 F deposits 0.5/3 = 0.167 mol.<br>
+<b>Step 3:</b> Mass = 0.167 × 27 = <b>4.5 g</b>.`
+      }
+    ]
+  },
+  {
+    section: "Chemical Kinetics",
+    questions: [
+      {
+        q: "a) For a reaction A → B, the concentration of A decreases from 0.5 mol/L to 0.125 mol/L in 30 minutes. If the reaction is first order, calculate the rate constant.",
+        a: `<b>Step 1:</b> For first order: ln([A]₀/[A]) = kt.<br>
+ln(0.5/0.125) = k × 30 ⇒ ln(4) = k × 30 ⇒ 1.386 = k × 30.<br>
+<b>Step 2:</b> k = 1.386/30 = <b>0.0462 min⁻¹</b>.`
+      },
+      {
+        q: "b) The rate of a reaction doubles when the temperature is increased by 10°C. If the activation energy is 50 kJ/mol, calculate the rate constant ratio at 300 K and 310 K. (R = 8.314 J·mol⁻¹·K⁻¹)",
+        a: `<b>Step 1:</b> ln(k₂/k₁) = Ea/R (1/T₁ - 1/T₂)<br>
+= 50000/8.314 × (1/300 - 1/310) = 6016 × (0.00333 - 0.00323) = 6016 × 0.0001 = 0.6016<br>
+<b>Step 2:</b> k₂/k₁ = e^0.6016 ≈ <b>1.82</b>.`
+      },
+      {
+        q: "c) The half-life of a zero-order reaction is 20 min when the initial concentration is 0.4 mol/L. Calculate the rate constant.",
+        a: `<b>Step 1:</b> t₁/₂ = [A]₀/2k ⇒ k = [A]₀/(2t₁/₂) = 0.4/(2×20) = <b>0.01 mol·L⁻¹·min⁻¹</b>.`
+      },
+      {
+        q: "d) For a second-order reaction, if the initial rate is 0.02 mol·L⁻¹·min⁻¹ at [A]₀ = 0.1 mol/L, calculate the rate constant.",
+        a: `<b>Step 1:</b> Rate = k[A]² ⇒ 0.02 = k × (0.1)² = k × 0.01.<br>
+<b>Step 2:</b> k = 0.02/0.01 = <b>2 L·mol⁻¹·min⁻¹</b>.`
+      },
+      {
+        q: "e) The decomposition of N₂O₅ is first order with rate constant 5.1 × 10⁻³ min⁻¹. How long will it take for 90% of N₂O₅ to decompose?",
+        a: `<b>Step 1:</b> For first order: ln([A]₀/[A]) = kt.<br>
+90% decomposed ⇒ [A]/[A]₀ = 0.1 ⇒ ln(1/0.1) = kt ⇒ 2.303 = 5.1×10⁻³ × t.<br>
+<b>Step 2:</b> t = 2.303 / 5.1×10⁻³ ≈ <b>452 min</b>.`
+      }
+    ]
+  },
+  {
+    section: "Surface Chemistry",
+    questions: [
+      {
+        q: "a) 100 mL of 0.01 M AgNO₃ is added to 100 mL of 0.02 M NaCl. Calculate the mass (in mg) of AgCl precipitated. (M = 143.5 g/mol)",
+        a: `<b>Step 1:</b> Moles AgNO₃ = 0.01 × 0.1 = 0.001 mol; moles NaCl = 0.02 × 0.1 = 0.002 mol.<br>
+<b>Step 2:</b> AgNO₃ is limiting. Mass = 0.001 × 143.5 = <b>143.5 mg</b>.`
+      },
+      {
+        q: "b) The coagulation value of NaCl for As₂S₃ sol is 30 mmol/L. Calculate the minimum volume (in mL) of 0.1 M NaCl required to coagulate 200 mL of the sol.",
+        a: `<b>Step 1:</b> Moles needed = 30 mmol/L × 0.2 L = 6 mmol = 0.006 mol.<br>
+<b>Step 2:</b> Volume = 0.006/0.1 = <b>60 mL</b>.`
+      },
+      {
+        q: "c) The surface area of an adsorbent increases from 100 m² to 130 m² after adsorption. If 0.3 g of adsorbate is adsorbed, calculate the amount adsorbed per unit area (in mg/m²).",
+        a: `<b>Step 1:</b> Increase in area = 30 m².<br>
+<b>Step 2:</b> Amount per unit area = 0.3 g / 30 m² = 0.01 g/m² = <b>10 mg/m²</b>.`
+      },
+      {
+        q: "d) For a colloidal solution, if the diameter of dispersed particles is 100 nm, calculate the total surface area (in m²) of particles in 1 g, assuming density is 2 g/cm³ and particles are spherical.",
+        a: `<b>Step 1:</b> r = 50 nm = 5 × 10⁻⁸ m. Volume of 1 particle = (4/3)πr³.<br>
+<b>Step 2:</b> Mass of 1 particle = volume × density. Number of particles = 1g/mass per particle.<br>
+<b>Step 3:</b> Total area = number × surface area per particle. <b>Answer: 0.48 m²</b>.`
+      },
+      {
+        q: "e) 50 mL of 0.01 M BaCl₂ is mixed with 50 mL of 0.01 M Na₂SO₄. Calculate the mass of BaSO₄ formed. (M = 233 g/mol)",
+        a: `<b>Step 1:</b> Moles Ba²⁺ = 0.01 × 0.05 = 0.0005 mol. Moles SO₄²⁻ = 0.01 × 0.05 = 0.0005 mol.<br>
+<b>Step 2:</b> BaSO₄ formed = 0.0005 mol × 233 = <b>0.1165 g</b>.`
+      }
+    ]
+  }
+];
+
+
+ 
+    
+    // ---- BUILD NAVIGATION -----
+    function createNavLinks() {
+      let html = '';
+      DATA.forEach((section, idx) => {
+        html += `<a href="#q-${idx}" class="nav-link" data-section="${section.section}">${section.section}</a>`;
+      });
+      document.getElementById('nav-links').innerHTML = html;
+    }
+    // ---- BUILD CARDS -----
+    function createCards(filter = "") {
+  let out = '';
+  DATA.forEach((section, secIdx) => {
+    let showSection = !filter || section.section.toLowerCase().includes(filter);
+    let subCards = '';
+    section.questions.forEach((q, i) => {
+      let showQ = !filter || (q.q.toLowerCase().includes(filter) || (q.a && q.a.toLowerCase().includes(filter)));
+      if (showQ || showSection) {
+        subCards += `
+          <div class="qa-card" id="q-${secIdx}-${i}">
+            <div class="card-header">${section.section} - Q${String.fromCharCode(97 + i)})</div>
+            <div class="question">${q.q}</div>
+            <button class="show-solution-btn" onclick="toggleSolution('sol-${secIdx}-${i}', this)">Show Solution</button>
+            <div class="solution" id="sol-${secIdx}-${i}">${q.a}</div>
+          </div>
+        `;
+      }
+    });
+    if (subCards) {
+      out += `
+        <a id="q-${secIdx}"></a>
+        <div class="section-heading-container">
+          <h2 class="section-heading">${section.section}</h2>
+        </div>
+        <div class="cards-grid">
+          ${subCards}
+        </div>
+      `;
+    }
+  });
+  document.getElementById('questionsContainer').innerHTML = out;
+  renderMathInElement(document.body); // Re-render math
+}
+
+    // ---- SOLUTION TOGGLING ----
+    function toggleSolution(id, btn) {
+      let el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+      btn.innerText = el.style.display === 'block' ? 'Hide Solution' : 'Show Solution';
+      renderMathInElement(document.body);
+    }
+    window.toggleSolution = toggleSolution; // Make global for HTML
+
+    // ---- SHOW ALL SOLUTIONS ----
+    document.getElementById('showAllBtn').onclick = function() {
+      document.querySelectorAll('.solution').forEach(e => e.style.display = 'block');
+      document.querySelectorAll('.show-solution-btn').forEach(b => b.innerText = 'Hide Solution');
+      renderMathInElement(document.body);
+    };
+
+    // ---- SEARCH ----
+    document.getElementById('searchInput').oninput = function() {
+      let val = this.value.toLowerCase().trim();
+      createCards(val);
+    };
+
+    // ---- MODE TOGGLE ----
+    const modeBtn = document.getElementById('toggleModeBtn');
+    let isLight = false;
+    modeBtn.onclick = function () {
+      isLight = !isLight;
+      document.body.classList.toggle("lightmode", isLight);
+      modeBtn.innerText = isLight ? "☀️ Light" : "🌙 Dark";
+      renderMathInElement(document.body);
+    };
+
+    // ---- AUTO NAV ----
+    document.addEventListener('DOMContentLoaded', function() {
+      createNavLinks();
+      createCards();
+      renderAnswerKey();
+      // nav link highlighting
+      document.querySelectorAll('.nav-link').forEach((nav, i) => {
+        nav.onclick = function() {
+          let allNavs = document.querySelectorAll('.nav-link');
+          allNavs.forEach(n => n.classList.remove('active'));
+          nav.classList.add('active');
+        };
+      });
+    });
+
+    // ---- ANSWER KEY ----
+    function renderAnswerKey() {
+      let out = `<table style="border-collapse:collapse;width:100%;"><tr>
+        <th style="padding:2px 8px;text-align:left">Section</th>
+        <th style="padding:2px 8px;text-align:left">a</th>
+        <th style="padding:2px 8px;text-align:left">b</th>
+        <th style="padding:2px 8px;text-align:left">c</th>
+        <th style="padding:2px 8px;text-align:left">d</th>
+        </tr>`;
+      ANSWER_KEY.forEach(row => {
+        out += `<tr>
+        <td style="padding:2px 8px;color:var(--accent);font-weight:bold;">${row.section}</td>
+        <td style="padding:2px 8px;">${row.a[0]}</td>
+        <td style="padding:2px 8px;">${row.a[1]}</td>
+        <td style="padding:2px 8px;">${row.a[2]}</td>
+        <td style="padding:2px 8px;">${row.a[3]}</td>
+        </tr>`;
+      });
+      out += '</table>';
+      document.getElementById('answerKeyTable').innerHTML = out;
+      renderMathInElement(document.body);
+    }
+
+    // For math rendering after dynamic updates:
+    function renderMathInElement(elem) {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(elem, {
+          delimiters: [
+            {left: "$", right: "$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    }
+  </script>
+</body>
+</html>
+
+
