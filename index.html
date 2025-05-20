@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Study Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    h1 {
+      font-size: 2.4em;
+      margin-bottom: 1.2em;
+      letter-spacing: 2px;
+      color: #2d3142;
+      text-shadow: 0 2px 12px rgba(100,120,180,0.08);
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2em;
+      justify-content: center;
+    }
+    .card {
+      background: rgba(255,255,255,0.8);
+      border-radius: 1.3em;
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.13);
+      padding: 2.2em 2.7em;
+      min-width: 200px;
+      text-align: center;
+      font-size: 1.25em;
+      color: #2d3142;
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+      border: 1.5px solid #e0e6ed;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover, .card:focus {
+      transform: translateY(-7px) scale(1.04) rotate(-1deg);
+      box-shadow: 0 16px 40px 0 rgba(80,80,180,0.13);
+      background: #e3e9f4;
+      color: #3f51b5;
+      outline: none;
+    }
+    @media (max-width: 700px) {
+      .options { flex-direction: column; gap: 1.2em; }
+      .card { min-width: 160px; padding: 1.5em 1.2em; font-size: 1.08em;}
+      h1 { font-size: 1.5em; }
+    }
+    .card::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: linear-gradient(120deg, #6c63ff33 0%, #b0bfff33 100%);
+      z-index: 0;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .card span {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Your Study Portal</h1>
+  <div class="options">
+    <a class="card" href="chemistrypractise.html"><span>Physical Chemistry</span></a>
+    <a class="card" href="physicspractise.html"><span>Physics</span></a>
+    <a class="card" href="mathsrevision.html"><span>Maths</span></a>
+    <a class="card" href="wbwhebf.html"><span>Organic Conversion Tool</span></a>
+  </div>
+</body>
+</html>
